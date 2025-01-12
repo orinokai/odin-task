@@ -24,8 +24,8 @@ Install dependencies, build the app and start the server:
 
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `username` | `string` | **Required**. Username |
-| `password` | `string` | **Required**. Password |
+| `username` | `string` | **Required**. Min 3 characters, max 30 characters, only letters, numbers, underscores and hyphens. |
+| `password` | `string` | **Required**. Min 8 characters, at least one uppercase letter, one lowercase letter, one number and one special character. |
 
 #### Login
 
@@ -35,8 +35,8 @@ Install dependencies, build the app and start the server:
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `username` | `string` | **Required**. Username |
-| `password` | `string` | **Required**. Password |
+| `username` | `string` | **Required**. As above |
+| `password` | `string` | **Required**. As above |
 
 #### Logout
 
