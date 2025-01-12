@@ -99,7 +99,7 @@ Global rate limiting could be considered to mitigate the risk of DDoS attacks. S
 
 ### Performance and scaling
 
-Moving the session store to an in-memory store, e.g. Redis, would improve performance and scalability because the main bottleneck is the session/user lookup on every request.
+In production, the session store should be moved to an external database. However, it would be worthwhile to use an in-memory store, e.g. Redis, to improve performance and scalability because the main bottleneck is the session/user lookup on every request.
 
 ### Compliance
 
