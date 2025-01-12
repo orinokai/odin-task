@@ -33,6 +33,7 @@ async function startServer(mongoUri?: string) {
     secret: 'secret-key',
     resave: false,
     saveUninitialized: false,
+    cookie: { sameSite: 'strict', httpOnly: true },
     store: MongoStore.create({ mongoUrl: mongoUri })
   }))
 
