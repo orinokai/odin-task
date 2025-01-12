@@ -1,23 +1,24 @@
 import MongoStore from "connect-mongo"
-import express, { Express, Request, Response } from "express"
-import rateLimit from "express-rate-limit"
+import dotenv from 'dotenv'
+import express, { Express } from "express"
 import session from "express-session"
+import helmet from 'helmet'
 import { MongoMemoryServer } from "mongodb-memory-server"
 import mongoose from "mongoose"
 import passport from "passport"
 import "./auth/passport"
-import User from "./models/user"
+import authRoutes from './routes/auth'
 
 const app: Express = express()
 
-// Rate limiter
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per window
-  message: { error: 'Too many login attempts. Please try again after 15 minutes.' },
-  standardHeaders: true,
-  legacyHeaders: false
-})
+// JSON middleware
+app.use(express.json())
+
+// Add security headers
+app.use(helmet())
+
+// Load environment variables
+dotenv.config()
 
 async function startServer(mongoUri?: string) {
   if (!mongoUri) {
@@ -30,10 +31,17 @@ async function startServer(mongoUri?: string) {
 
   // Session configuration
   app.use(session({
-    secret: 'secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { sameSite: 'strict', httpOnly: true },
+    secret: process.env.SESSION_SECRET || 'dev-secret-key',
+    resave: false,            // Don't save session if unmodified
+    saveUninitialized: false, // Don't create session until something is stored
+    cookie: {
+      sameSite: 'strict',     // Mitigate CSRF attacks
+      httpOnly: true,         // Mitigate XSS attacks
+      secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+      maxAge: 24 * 60 * 60 * 1000  // 24 hours
+    },
+    name: 'sessionId',        // Change from default 'connect.sid'
+    rolling: true,            // Reset expiry on activity
     store: MongoStore.create({ mongoUrl: mongoUri })
   }))
 
@@ -41,38 +49,8 @@ async function startServer(mongoUri?: string) {
   app.use(passport.initialize())
   app.use(passport.session())
 
-  // Basic middleware
-  app.use(express.json())
-  app.use(express.urlencoded({ extended: true }))
-
-  // Routes
-  app.post('/register', async (req: Request, res: Response) => {
-    try {
-      const { username, password } = req.body
-      const user = new User({ username, password })
-      await user.save()
-      res.status(201).json({ message: 'User registered successfully' })
-    } catch (error) {
-      res.status(400).json({ error: error })
-    }
-  })
-
-  app.post('/login', loginLimiter, passport.authenticate('local'), (req: Request, res: Response) => {
-    res.json({ message: 'Logged in successfully' })
-  })
-
-  app.get('/logout', (req: Request, res: Response) => {
-    req.logout(() => {
-      res.json({ message: 'Logged out successfully' })
-    })
-  })
-
-  app.get('/profile', (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) {
-      res.status(401).json({ message: 'Not authenticated' })
-    }
-    res.json({ user: req.user })
-  })
+  // Mount routes
+  app.use('/auth', authRoutes)
 
   // Start server
   const PORT = 3000
