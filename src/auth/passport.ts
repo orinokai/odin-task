@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-// Passport configuration
+// Verify user credentials
 passport.use(new LocalStrategy(async (username, password, done) => {
   try {
     const user = await User.findOne({ username })
