@@ -14,7 +14,13 @@ const userSchema = new mongoose.Schema({
     required: true, 
     unique: true,
     minLength: 3,
-    maxLength: 30
+    maxLength: 30,
+    validate: {
+      validator: function(v: string) {
+        return /^[a-zA-Z0-9_-]+$/.test(v)
+      },
+      message: 'Username can only contain letters, numbers, underscores, and hyphens'
+    }
   },
   password: { 
     type: String, 
