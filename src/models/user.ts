@@ -19,18 +19,18 @@ const userSchema = new mongoose.Schema({
   password: { 
     type: String, 
     required: true,
-    minLength: 8
+    validate: {
+      validator: function(v: string) {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(v)
+      },
+      message: (props: { value: string }) => `${props.value} is not a valid password. Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character`
+    }
   }
 })
 
-// Add password validation
+// Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next()
-  
-  // Check password strength
-  if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(this.password)) {
-    throw new Error('Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character')
-  }
   
   try {
     const salt = await bcrypt.genSalt(10)
