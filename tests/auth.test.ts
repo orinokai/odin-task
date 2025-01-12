@@ -58,7 +58,7 @@ describe('Authentication Tests', () => {
           password: 'differentTestPass123!'
         })
 
-      expect(response.status).toBe(500)
+      expect(response.status).toBe(400)
       expect(response.body).toHaveProperty('error')
     })
   })
@@ -140,6 +140,41 @@ describe('Authentication Tests', () => {
       // Test incorrect password
       const incorrectResult = await user.comparePassword('wrongpass')
       expect(incorrectResult).toBe(false)
+    })
+  })
+
+  describe('Profile Access', () => {
+    it('should deny access when not authenticated', async () => {
+      const response = await request(app)
+        .get('/auth/profile')
+      
+      expect(response.status).toBe(401)
+      expect(response.body).toEqual({ error: 'Not authenticated' })
+    })
+
+    it('should allow access when authenticated', async () => {
+      // Register and login a user first
+      await request(app)
+        .post('/auth/register')
+        .send({
+          username: 'profiletest',
+          password: 'testPass123!'
+        })
+
+      const agent = request.agent(app)  // Use agent to maintain session
+      await agent
+        .post('/auth/login')
+        .send({
+          username: 'profiletest',
+          password: 'testPass123!'
+        })
+
+      // Try to access profile
+      const response = await agent.get('/auth/profile')
+      
+      expect(response.status).toBe(200)
+      expect(response.body.user).toBeDefined()
+      expect(response.body.user.username).toBe('profiletest')
     })
   })
 }) 
