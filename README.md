@@ -12,6 +12,7 @@ Install dependencies, build the app and start the server:
   npm run build
   npm start
 ```
+The app starts on port 3000 by default. The server uses a in-memory Mongo database so there's no database requirement.
 
 
 ## API Reference
