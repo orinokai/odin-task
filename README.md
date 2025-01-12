@@ -1,4 +1,4 @@
-# Odin Task
+# Odin Auth Task
 
 A lightweight backend for a headless web application that includes basic auth and data retrieval. The backend is written in Typescript, which is compiled to Javascript and runs on Node.js 18 and up.
 
