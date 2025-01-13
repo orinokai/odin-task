@@ -1,5 +1,6 @@
-import { Request, Response, Router } from 'express'
+import { NextFunction, Request, Response, Router } from 'express'
 import rateLimit from 'express-rate-limit'
+import sanitize from 'mongo-sanitize'
 import mongoose from 'mongoose'
 import passport from 'passport'
 import User from '../models/user'
@@ -15,8 +16,14 @@ const loginLimiter = rateLimit({
   legacyHeaders: false
 })
 
+// Sanitizer to prevent MongoDB injection
+const sanitizeBody = (req: Request, _: any, next: NextFunction) => {
+  req.body = sanitize(req.body);
+  next();
+}
+
 // Routes
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', sanitizeBody, async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body
     const user = new User({ username, password })
@@ -44,7 +51,7 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 })
 
-router.post('/login', loginLimiter, (req: Request, res: Response, next) => {
+router.post('/login', loginLimiter, sanitizeBody, (req: Request, res: Response, next) => {
   passport.authenticate('local', (err: any, user: any, _: any) => {
     if (err) {
       return res.status(500).json({ error: 'Internal server error' })
